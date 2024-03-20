@@ -72,6 +72,8 @@ mamba env create -f env.yml
 # Activate environment
 mamba activate snakemake
 ```
+## Edit Snakemake Config
+The Snakemake configuration file (`workflow/config.yml`) will need to be modified so that the input paths, output filenames, and paramaters are specific to your computing environment and resources available.
 
 ## Fix for Circular Dependency
 ## Run Snakemake Locally

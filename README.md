@@ -1,5 +1,5 @@
 # Overview
-This snakemake workflow will convert Illumina genotyping .idat files to .gtc, then to .vcf format. This workflow requires that you have the Illumina IAAP-CLI software installed, the appropriate Illumina manifest files (.bpm and .csv format) and clusterfile for the genotyping array downloaded from the illumina website, and a reference genome in fasta format. You will also need to have Conda or Mamba installed. Instructions for installing the Illumina IAAP-CLI software and reference genome GRCh38/hg38 were modified from this gtc2vcf [README.md](https://github.com/freeseek/gtc2vcf/blob/1898320dab37c9da4e355f0fa31d2ab28d3632d5/README.md#installation). 
+This snakemake workflow will convert Illumina genotyping .idat files to .gtc, then to .vcf format. This workflow requires that you have the Illumina IAAP-CLI software installed, the appropriate Illumina manifest files (.bpm and .csv format) and clusterfile for the genotyping array downloaded from the illumina website, and a reference genome in fasta format. You will also need to have Conda or Mamba installed. Instructions for installing the Illumina IAAP-CLI software and reference genome GRCh38/hg38 were modified from this [gtc2vcf README](https://github.com/freeseek/gtc2vcf/blob/1898320dab37c9da4e355f0fa31d2ab28d3632d5/README.md#installation) created by GitHub user freeseek. 
 
 ## Dependencies:
   * Illumina IAAP-CLI
@@ -76,6 +76,23 @@ mamba activate snakemake
 The Snakemake configuration file (`workflow/config.yml`) will need to be modified so that the input paths, output filenames, and paramaters are specific to your computing environment and resources available.
 
 ## Fix for Circular Dependency
+There is currently a known circular dependency issue with the workflow. The wildcard functions defined in the snakemake file require a text file that is not created until the first non-target rule is run. There is a fix in the works, but in the meantime, you can manually run the script that is called in the rule `check_samples` to create the necessary file, then continue running snakemake as normal.
+
+```shell
+python /scripts/check_samples.py  --idat-dir <raw_data_dir> --output-dir <output_dir>
+```
 ## Run Snakemake Locally
+The following command will run the snakemake workflow with 1 job submitted at a time, a wait period of 30 seconds for 'missing' files to be generated, and will use conda (necessary for the rule `gtc_to_vcf`). In this version of the workflow, the rules `idat_to_gtc` and `gtc_to_vcf` take in a *directory* of samples and parallelizes by threading, so at this time there is no benefit to having snakemake submit more than 1 job at a time. 
+
+```shell
+mamba activate snakemake
+snakemake -j 1 \
+ --latency-wait 30 \
+ --use-conda
+```
 ## Run Snakemake on Remote Cluster
+This workflow can also be run on a cluster system. An example of a job script for submitting this workflow to a Sun Grid Engine (SGE) scheduler can be found in `submit_job.sh`. Using `nohup` before the snakemake command will ensure that a job will finish even if the ssh-connection is dropped. If the ssh-connection is dropped or the process that snakemake was running on reaches a time or memory limit and is terminated before all jobs in the workflow are completed, you can restart snakemake by unlocking the working directory (`snakemake --unlock`) then resubmitting the job script with `--rerun-incomplete` appended to the snakemake command.
+
 # Planned Updates
+ * The rule `check_samples` will be converted to a subworkflow to fix the circular dependency issue.
+ * The workflow will be updated so that the conversion steps work by *sample* and not by *directory* so that parallelization can be performed across cores vs threads.

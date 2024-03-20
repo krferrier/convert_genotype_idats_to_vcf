@@ -28,7 +28,39 @@ source ~/.bash_profile
 iaap gencall -h
 ```
 ## Install Reference Genome
+If you would prefer to install GRCh37/hg19 instead, an ftp link and guide on which reference genome build to use can be found [here](https://lh3.github.io/2017/11/13/which-human-reference-genome-to-use)
+
 ### Dependencies
+ * samtools
+ * bwa
+
+If you do not already have these tools installed, you can install them with Conda/Mamba (replace `mamba` with `conda` if you don't have mamba installed):
+```shell
+# Not a requirement, but encouraged to create a new environment.
+mamba create -n genetics -y
+mamba activate genetics
+# Install samtools and bwa.
+mamba install bioconda::samtools
+mamba install bioconda::bwa
+```
+Then run the following:
+```shell
+# Make directories for reference_genomes and build version.
+mkdir ref_genomes/GRCh38/
+cd ref_genomes/GRCh38/
+# Download the reference genome.
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz
+# Unzip the reference genome.
+gzip -d GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz
+# Index the reference genome in fasta format.
+samtools faidx GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+# Index reference genome for alignment.
+bwa index GCA_000001405.15_GRCh38_no_alt_analysis_set.fna
+```
+Deactivate conda/mamba environment:
+```shell
+mamba deactivate 
+```
 
 # Using this Workflow
 ## Install snakemake 

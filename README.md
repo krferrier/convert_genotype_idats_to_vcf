@@ -28,7 +28,7 @@ source ~/.bash_profile
 iaap gencall -h
 ```
 ## Install Reference Genome
-If you would prefer to install GRCh37/hg19 instead, an ftp link and guide on which reference genome build to use can be found [here](https://lh3.github.io/2017/11/13/which-human-reference-genome-to-use)
+If you would prefer to install GRCh37/hg19 instead, an ftp link and guide on which reference genome build to use can be found [here](https://lh3.github.io/2017/11/13/which-human-reference-genome-to-use).
 
 ### Dependencies
  * samtools
@@ -64,6 +64,15 @@ mamba deactivate
 
 # Using this Workflow
 ## Install snakemake 
+If you already have a conda environment for running snakemake, activate the environment and proceed to the next step. Otherwise, follow the below commands to install snakemake from the env.yml. This yml will also install the snakemake executor plugin 'cluster-generic' which allows snakemake to submit jobs to a cluster scheduler.
+
+```shell
+# Create environment from yml file
+mamba env create -f env.yml
+# Activate environment
+mamba activate snakemake
+```
+
 ## Fix for Circular Dependency
 ## Run Snakemake Locally
 ## Run Snakemake on Remote Cluster

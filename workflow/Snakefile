@@ -27,7 +27,7 @@ rule check_samples:
     output: 
         config["output_dir"] + "/valid_samples.txt",
         config["output_dir"] + "/not_valid_samples.txt"
-    run:
+    shell:
         f"""
         python {{input.script}} \
         --idat-dir {{input.raw_data_dir}} \

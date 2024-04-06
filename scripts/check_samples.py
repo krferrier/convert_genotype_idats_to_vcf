@@ -22,15 +22,15 @@ def sample_list(idat_files):
 # Check if each sample has bot Red and Grn .idat files                
 def check_files(samples, idat_files):
     sample_validity = {}
-    sample_validity["valid_samples"] = []
-    sample_validity["not_valid_samples"] = []
+    sample_validity["samples"] = []
+    sample_validity["incomplete_samples"] = []
     for sample in samples:
         red_file = f"{sample}_Red.idat"
         grn_file = f"{sample}_Grn.idat"
         if red_file in idat_files and grn_file in idat_files:
-            sample_validity["valid_samples"].append(sample)
+            sample_validity["samples"].append(sample)
         else:
-            sample_validity["not_valid_samples"].append(sample)
+            sample_validity["incomplete_samples"].append(sample)
     return sample_validity
 
 def main():
@@ -47,14 +47,14 @@ def main():
     idat_files = find_idat_files(input_directory)
     samples = sample_list(idat_files)
     sample_validity = check_files(samples, idat_files)
-    valid_samples = sample_validity["valid_samples"]
-    not_valid_samples = sample_validity["not_valid_samples"]
+    valid_samples = sample_validity["samples"]
+    not_valid_samples = sample_validity["incomplete_samples"]
 
-    with open(f"{args.output_dir}/valid_samples.txt", "w") as output_file:
+    with open(f"{args.output_dir}/samples.txt", "w") as output_file:
         for sample in valid_samples:
             output_file.write(f"{sample}\n")
     
-    with open(f"{args.output_dir}/not_valid_samples.txt", "w") as output_file:
+    with open(f"{args.output_dir}/incomplete_samples.txt", "w") as output_file:
         for sample in not_valid_samples:
             output_file.write(f"{sample}\n")
         

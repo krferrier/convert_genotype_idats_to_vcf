@@ -1,13 +1,14 @@
 # Input file paths. Do not include the trailing `/` for the directories.
-raw_data_dir: "MEGA/CHIPS_DATA"
-output_dir: "MEGA"
-manifest_bpm: "MEGA/mega_files/Multi-EthnicGlobal_D2.bpm"
-manifest_csv: "MEGA/mega_files/Multi-EthnicGlobal_D2.csv"
-clusterfile_egt: "MEGA/mega_files/Multi-EthnicGlobal_D1_ClusterFile.egt"
-ref_genome: "MEGA/ref_genomes/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
+samples_file: "data/samples.txt"
+raw_data_dir: "data/test_idats"
+output_dir: "data"
+manifest_bpm: "data/mega_files/Multi-EthnicGlobal_D2.bpm"
+manifest_csv: "data/mega_files/Multi-EthnicGlobal_D2.csv"
+clusterfile_egt: "data/mega_files/Multi-EthnicGlobal_D1_ClusterFile.egt"
+ref_genome: "data/ref_genomes/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
 # Output file names
-stats_tsv_name: "YourDataset_Multi-EthnicGlobal_8_GRCh38.tsv"
-vcf_gz_name: "YourDataset_Multi-EthnicGlobal_8_GRCh38.vcf.gz"
-csi_name: "YourDataset_Multi-EthnicGlobal_8_GRCh38.vcf.gz.csi"
+stats_tsv_name: "shs_Multi-EthnicGlobal_8_GRCh38.tsv"
+vcf_gz_name: "shs_Multi-EthnicGlobal_8_GRCh38.vcf.gz"
+csi_name: "shs_Multi-EthnicGlobal_8_GRCh38.vcf.gz.csi"
 # Number of parallel threads to use
 threads: 64

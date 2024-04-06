@@ -1,72 +1,74 @@
+from find_source_path import find_idat_files
 configfile: "workflow/config.yml"
 
-
-def list_idats():
-    with open(config["output_dir"] + "/valid_samples.txt") as f:
+def source_idats():
+    source_dir = config["raw_data_dir"]
+    idats = find_idat_files(source_dir)
+    source_paths = []
+    with open(config["samples_file"]) as f:
         samples = [sample for sample in f.read().split('\n') if len(sample) > 0]  # we dont want empty lines
-        return expand(config["output_dir"] +"/tmp_idats/{sample}_{color}.idat", sample=samples, color=["Red","Grn"])
+        for sample in samples:
+            red = 'find "{}" -type f -name "{}_{}.idat"'.format(
+                        source_dir, sample, "Red")
+            green = 'find "{}" -type f -name "{}_{}.idat"'.format(
+                        source_dir, sample, "Grn")
+            source_path_red = subprocess.getoutput(red).split()[0]
+            source_path_green = subprocess.getoutput(green).split()[0]
+            source_paths.append(source_path_red)
+            source_paths.append(source_path_green)
+    return source_paths
 
-def list_gtcs():
-    with open(config["output_dir"] + "/valid_samples.txt") as f:
-        samples = [sample for sample in f.read().split('\n') if len(sample) > 0]  # we dont want empty lines
-        return expand(config["output_dir"] + "/tmp_gtcs/{sample}.gtc", sample=samples)
+def tmp_idats():
+    with open(config["samples_file"]) as f:
+        samples = [sample for sample in f.read().split('\n') if len(sample) > 0] # we dont want empty lines
+        return expand(config["output_dir"] + "/tmp_idats/{sample}_{color}.idat", sample=samples, color = ["Red", "Grn"])
 
-rule target:
+def tmp_gtcs():
+    with open(config["samples_file"]) as f:
+        samples = [sample for sample in f.read().split('\n') if len(sample) > 0] # we dont want empty lines
+        return expand(config["output_dir"] + "/tmp_gtcs/{sample}.gtc", sample=samples)   
+
+rule all:
     input: 
+        source_idats(),
         stats_tsv = config["output_dir"] + "/" + config["stats_tsv_name"],
         vcf_gz = config["output_dir"] + "/" + config["vcf_gz_name"],
         csi = config["output_dir"] + "/" + config["csi_name"]
 
-
-rule check_samples:
-    input: 
-        script = "scripts/check_samples.py",
-        raw_data_dir = config["raw_data_dir"]
-    params:
-        output_dir = config["output_dir"]
-    output: 
-        config["output_dir"] + "/valid_samples.txt",
-        config["output_dir"] + "/not_valid_samples.txt"
-    shell:
-        f"""
-        python {{input.script}} \
-        --idat-dir {{input.raw_data_dir}} \
-        --output-dir {{params.output_dir}}
-        """ 
-    
 rule copy_idats:
-    input: 
+    input:
+        source_idats(), 
+        samples_file = config["samples_file"],
         script = "scripts/copy_samples_parallel.sh",
-        sample_list = config["output_dir"] + "/valid_samples.txt",
         raw_data_dir = config["raw_data_dir"]
     params:
         n_threads = config["threads"],
         idats_dir = directory(config["output_dir"] + "/tmp_idats")
     output:
-        temp(list_idats()),
-        temp(directory(config["output_dir"] + "/tmp_idats"))
+        temp(directory(config["output_dir"] + "/tmp_idats")),
+        tmp_idats = temp(tmp_idats())
     shell:
         f"""
         sh {{input.script}} \
         {{params.n_threads}} \
-        {{input.sample_list}} \
+        {{input.samples_file}} \
         {{input.raw_data_dir}} \
         {{params.idats_dir}}
         """
 
 rule idat_to_gtc:
     input:
-        list_idats(),
+        rules.copy_idats.output.tmp_idats,
         script = "scripts/idat_to_gtc.py",
         manifest_bpm = config["manifest_bpm"],
         clusterfile_egt = config["clusterfile_egt"],
-        idat_dir = config["output_dir"] + "/tmp_idats",
+        idat_dir = config["output_dir"] + "/tmp_idats"
     params:
         num_threads = config["threads"],
         gtcs_dir = directory(config["output_dir"] + "/tmp_gtcs")
     output:
-        temp(list_gtcs()),
-        temp(directory(config["output_dir"] + "/tmp_gtcs"))
+        temp(directory(config["output_dir"] + "/tmp_gtcs")),
+        tmp_gtcs = temp(tmp_gtcs())
     shell:         
         f"""
         python {{input.script}} \
@@ -79,12 +81,12 @@ rule idat_to_gtc:
 
 rule gtc_to_vcf:
     input:
-        list_gtcs(),
+        rules.idat_to_gtc.output.tmp_gtcs,
         script = "scripts/gtc_to_vcf.sh",
         manifest_bpm = config["manifest_bpm"],
         manifest_csv = config["manifest_csv"],
         clusterfile_egt = config["clusterfile_egt"],
-        gtc_dir = config["output_dir"] + "/tmp_gtcs", 
+        gtcs_dir = config["output_dir"] + "/tmp_gtcs", 
         ref_genome = config["ref_genome"]
     params:
         n_threads = config["threads"]
@@ -100,13 +102,10 @@ rule gtc_to_vcf:
             {{input.manifest_bpm}} \
             {{input.manifest_csv}} \
             {{input.clusterfile_egt}} \
-            {{input.gtc_dir}} \
+            {{input.gtcs_dir}} \
             {{input.ref_genome}} \
             {{output.stats_tsv}} \
             {{output.vcf_gz}} \
             {{params.n_threads}} \
             {{output.csi}}
         """
-
-
-

@@ -46,6 +46,7 @@ mamba install bioconda::bwa
 Then run the following:
 ```shell
 # Make directories for reference_genomes and build version.
+mkdir ref_genomes/
 mkdir ref_genomes/GRCh38/
 cd ref_genomes/GRCh38/
 # Download the reference genome.
